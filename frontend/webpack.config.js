@@ -5,6 +5,7 @@ const PnpWebpackPlugin = require("pnp-webpack-plugin");
 const path = require("path");
 
 module.exports = {
+  mode: "development",
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "dist/"),
@@ -13,10 +14,19 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"],
+      },
+      {
         test: /\.vue$/,
         loader: "vue-loader",
       },
     ],
+  },
+  devServer: {
+    contentBase: "./dist",
+    port: 3000,
+    host: "0.0.0.0",
   },
   plugins: [
     new VueLoaderPlugin(),
