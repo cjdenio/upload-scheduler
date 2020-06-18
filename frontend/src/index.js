@@ -1,12 +1,7 @@
 import Vue from "vue";
 
 // Vue plugins
-import Buefy from "buefy";
-import "buefy/dist/buefy.css";
-
 import vuetify from "./plugins/vuetify";
-
-Vue.use(Buefy);
 
 import App from "./App.vue";
 
