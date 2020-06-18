@@ -13,7 +13,7 @@ func main() {
 		res.Write([]byte("404 :("))
 	})
 
-	r.PathPrefix("/").HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+	r.PathPrefix("/api/upload").Methods("POST").HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte("Hello World!"))
 	})
 

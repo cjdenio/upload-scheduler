@@ -31,6 +31,9 @@ module.exports = {
     contentBase: "./dist",
     port: 3000,
     host: "0.0.0.0",
+    proxy: {
+      "/api": "http://backend:3000",
+    },
   },
   plugins: [
     new VueLoaderPlugin(),
