@@ -1,3 +1,6 @@
 <template>
-  <h1 class="title">Hello World!</h1>
+  <div>
+    <b-button>Howdy</b-button>
+    <v-btn raised color="primary">Hello</v-btn>
+  </div>
 </template>
