@@ -7,41 +7,24 @@
         outlined
         :prepend-icon="null"
         prepend-inner-icon="mdi-paperclip"
+        show-size
       />
-      <v-text-field label="File Name" outlined />
-      <v-time-picker />
+      <v-text-field label="File Name" outlined v-model="name" />
+      <v-btn @click="submit" color="primary"
+        ><v-icon left>mdi-upload</v-icon> Upload</v-btn
+      >
     </div>
-    <v-dialog v-model="dialog" max-width="290">
-      <v-card>
-        <v-card-title class="headline"
-          >Use Google's location service?</v-card-title
-        >
-
-        <v-card-text>
-          You're about to upload <b>{{ file ? file.name : "" }}</b>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-
-          <v-btn color="green darken-1" text @click="dialog = false">
-            Disagree
-          </v-btn>
-
-          <v-btn color="green darken-1" text @click="dialog = false">
-            Agree
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
       file: null,
+      name: "",
       dialog: false,
     };
   },
@@ -49,6 +32,15 @@ export default {
     file(v) {
       console.log(v);
       this.dialog = true;
+    },
+  },
+  methods: {
+    async submit() {
+      let data = new FormData();
+      data.append("name", this.name);
+      data.append("file", this.file);
+
+      let resp = await axios.post("http://localhost:3001/api/upload", data, {});
     },
   },
 };

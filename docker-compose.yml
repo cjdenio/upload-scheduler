@@ -12,3 +12,7 @@ services:
       - "3001:3000"
     volumes:
       - ".:/usr/src/app"
+      - "files:/root/.config/upload-scheduler"
+volumes:
+  files:
+  db_volume:

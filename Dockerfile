@@ -2,6 +2,9 @@ FROM golang:latest
 
 WORKDIR /usr/src/app
 
+RUN mkdir -p /root/.config/upload-scheduler \
+    && chmod -R 777 /root/.config/upload-scheduler
+
 COPY . .
 
 RUN go get .
