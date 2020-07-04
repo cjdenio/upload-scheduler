@@ -7,11 +7,11 @@ services:
     volumes:
       - "./frontend:/usr/src/app"
   backend:
-    build: .
+    build: backend/
     ports:
       - "3001:3000"
     volumes:
-      - ".:/usr/src/app"
+      - "./backend:/usr/src/app"
       - "files:/root/.config/upload-scheduler"
 volumes:
   files:

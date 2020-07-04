@@ -41,6 +41,9 @@ export default {
       data.append("file", this.file);
 
       let resp = await axios.post("http://localhost:3001/api/upload", data, {});
+
+      alert("success");
+      this.$router.push("/");
     },
   },
 };
