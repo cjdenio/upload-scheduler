@@ -13,6 +13,12 @@ services:
     volumes:
       - "./backend:/usr/src/app"
       - "files:/root/.config/upload-scheduler"
+  db:
+    image: mongo
+    volumes:
+      - "db_volume:/data/db"
+    ports:
+      - "3003:27017"
 volumes:
   files:
   db_volume:

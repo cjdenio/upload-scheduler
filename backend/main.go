@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"time"
 
 	"io"
 	"io/ioutil"
@@ -13,9 +14,18 @@ import (
 	"encoding/json"
 
 	"github.com/gorilla/mux"
+
+	"github.com/cjdenio/upload-scheduler/db"
+	"go.mongodb.org/mongo-driver/bson"
+
+	"context"
+
+	"github.com/google/uuid"
 )
 
 func main() {
+	db.Connect()
+
 	r := mux.NewRouter()
 
 	r.HandleFunc("/api/upload", UploadHandler).Methods("POST")
@@ -32,19 +42,34 @@ func main() {
 		res.Header().Add("Content-Type", "image/png")
 		io.Copy(res, file)
 	}).Methods("GET")
+	r.HandleFunc("/api/file/{file}/delete", func(res http.ResponseWriter, req *http.Request) {
+		configDir, _ := os.UserConfigDir()
+		if err := os.Remove(path.Join(configDir, "upload-scheduler", "files", mux.Vars(req)["file"])); err != nil {
+			res.WriteHeader(500)
+			res.Write([]byte(err.Error()))
+		} else {
+			res.Write([]byte("OK"))
+		}
+	})
+
+	r.Methods("OPTIONS").HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Add("Access-Control-Allow-Origin", "*")
+		res.WriteHeader(204)
+		res.Write(nil)
+	})
 
 	server := &http.Server{
 		Handler: r,
 		Addr:    "0.0.0.0:3000",
 	}
 
+	fmt.Println("App started!")
 	log.Fatal(server.ListenAndServe())
-	fmt.Println("App started")
 }
 
 // UploadHandler handles uploads :)
 func UploadHandler(res http.ResponseWriter, req *http.Request) {
-	res.Header().Add("Access-Control-Allow-Origin", "*")
+	fileID := uuid.New().String()
 
 	req.ParseMultipartForm(1000)
 	src, header, err := req.FormFile("file")
@@ -62,7 +87,7 @@ func UploadHandler(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	dest, err := os.Create(path.Join(configDir, "upload-scheduler", "files", header.Filename))
+	dest, err := os.Create(path.Join(configDir, "upload-scheduler", "files", fileID))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,9 +96,21 @@ func UploadHandler(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	res.Header().Add("Access-Control-Allow-Origin", "*")
 	res.Write([]byte("OK"))
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err = db.DB.Database("upload-scheduler").Collection("files").InsertOne(ctx, bson.M{"name": header.Filename, "id": fileID})
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
+// ListFiles is an API method that lists all files
 func ListFiles(res http.ResponseWriter, req *http.Request) {
 	configDir, _ := os.UserConfigDir()
 	files, err := ioutil.ReadDir(path.Join(configDir, "upload-scheduler", "files"))
@@ -90,6 +127,7 @@ func ListFiles(res http.ResponseWriter, req *http.Request) {
 
 	resp, _ := json.Marshal(fileNames)
 
+	res.Header().Add("Access-Control-Allow-Origin", "*")
 	res.Header().Add("Content-Type", "application/json")
 	res.Write(resp)
 }

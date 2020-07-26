@@ -10,9 +10,10 @@
         show-size
       />
       <v-text-field label="File Name" outlined v-model="name" />
-      <v-btn @click="submit" color="primary"
+      <v-btn @click="submit" color="primary" :disabled="progress.active"
         ><v-icon left>mdi-upload</v-icon> Upload</v-btn
       >
+      <v-progress-linear :value="progress.value" :active="progress.active" />
     </div>
   </div>
 </template>
@@ -25,7 +26,10 @@ export default {
     return {
       file: null,
       name: "",
-      dialog: false,
+      progress: {
+        active: false,
+        value: 0,
+      },
     };
   },
   watch: {
@@ -40,10 +44,17 @@ export default {
       data.append("name", this.name);
       data.append("file", this.file);
 
-      let resp = await axios.post("http://localhost:3001/api/upload", data, {});
+      this.progress.active = true;
+      let resp = await axios("http://localhost:3001/api/upload", {
+        method: "POST",
+        onUploadProgress: (e) => {
+          console.log(e);
+          this.progress.value = (e.loaded / e.total) * 100;
+        },
+        data,
+      });
 
-      alert("success");
-      this.$router.push("/");
+      this.progress.value = 100;
     },
   },
 };
